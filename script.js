@@ -7,6 +7,7 @@
 /* ════════════════════════════════════════════════════
    1. LANDING PAGE — Energy Canvas Animation
 ════════════════════════════════════════════════════ */
+const API = "http://localhost:3000";
 function initEnergyCanvas() {
   const canvas = document.getElementById('energyCanvas');
   if (!canvas) return;
