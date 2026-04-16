@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoltShare — P2P Energy Trading</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     LAYER 1 · LANDING / SPLASH SCREEN
+══════════════════════════════════════════════ -->
+<div id="landing" class="layer active">
+  <canvas id="grid-canvas"></canvas>
+
+  <div class="landing-content">
+    <div class="landing-bolt" id="landingBolt">
+      <svg viewBox="0 0 40 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M23 2L2 30H18L16 54L38 24H22L23 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none"/>
+      </svg>
+    </div>
+
+    <h1 class="landing-logo">
+      <span class="logo-v">Volt</span><span class="logo-s">Share</span>
+    </h1>
+
+    <div class="landing-tagline">Peer-to-Peer Electricity Trading</div>
+
+    <div class="landing-bar"></div>
+
+    <p class="landing-sub">Buy and sell clean energy directly with your neighbors.</p>
+
+    <div class="landing-progress">
+      <div class="lp-fill" id="lpFill"></div>
+    </div>
+    <div class="landing-hint">Initializing platform…</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     LAYER 2 · AUTH (LOGIN / REGISTER)
+══════════════════════════════════════════════ -->
+<div id="auth" class="layer">
+  <div class="auth-bg">
+    <!-- Animated grid lines via CSS -->
+    <div class="auth-grid-overlay"></div>
+  </div>
+
+  <div class="auth-shell">
+
+    <!-- Brand column -->
+    <div class="auth-brand-col">
+      <div class="ab-logo">
+        <div class="ab-bolt">
+          <svg viewBox="0 0 40 56" fill="none"><path d="M23 2L2 30H18L16 54L38 24H22L23 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+        <span>VoltShare</span>
+      </div>
+      <h2 class="ab-heading">Energy trading,<br>peer to peer.</h2>
+      <ul class="ab-points">
+        <li>Trade surplus solar &amp; wind energy</li>
+        <li>Real-time marketplace pricing</li>
+        <li>Secure wallet &amp; transactions</li>
+        <li>Smart meter integration ready</li>
+      </ul>
+      <div class="ab-stat-row">
+        <div class="ab-stat"><div class="ab-stat-n">2.4 MW</div><div class="ab-stat-l">Traded today</div></div>
+        <div class="ab-stat"><div class="ab-stat-n">1,840</div><div class="ab-stat-l">Active users</div></div>
+        <div class="ab-stat"><div class="ab-stat-n">₹5.20</div><div class="ab-stat-l">Avg price/kWh</div></div>
+      </div>
+    </div>
+
+    <!-- Form column -->
+    <div class="auth-form-col">
+
+      <!-- Tab switcher -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+        <div class="auth-tab-ink" id="tabInk"></div>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <form class="auth-form active" id="formLogin" onsubmit="handleLogin(event)" novalidate>
+        <div class="field-group">
+          <label class="field-label">Email</label>
+          <input type="email" id="loginEmail" class="field-input" placeholder="you@example.com" autocomplete="email"/>
+          <span class="field-error" id="loginEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" id="loginPass" class="field-input" placeholder="Your password" autocomplete="current-password"/>
+            <button type="button" class="eye-toggle" onclick="toggleEye('loginPass', this)" tabindex="-1">
+              <svg id="eyeLogin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <span class="field-error" id="loginPassErr"></span>
+        </div>
+        <button type="submit" class="btn-primary">Sign In</button>
+        <p class="auth-switch-hint">No account? <a href="#" onclick="switchTab('register')">Register here</a></p>
+      </form>
+
+      <!-- REGISTER FORM -->
+      <form class="auth-form" id="formRegister" onsubmit="handleRegister(event)" novalidate>
+        <div class="field-group">
+          <label class="field-label">Full Name</label>
+          <input type="text" id="regName" class="field-input" placeholder="Alex Morgan" autocomplete="name"/>
+          <span class="field-error" id="regNameErr"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Email</label>
+          <input type="email" id="regEmail" class="field-input" placeholder="you@example.com" autocomplete="email"/>
+          <span class="field-error" id="regEmailErr"></span>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Role</label>
+          <select id="regRole" class="field-input field-select">
+            <option value="prosumer">Prosumer (Buy &amp; Sell)</option>
+            <option value="buyer">Buyer only</option>
+            <option value="seller">Seller only</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div class="field-input-wrap">
+            <input type="password" id="regPass" class="field-input" placeholder="Min. 8 characters" autocomplete="new-password" oninput="updateStrength(this.value)"/>
+            <button type="button" class="eye-toggle" onclick="toggleEye('regPass', this)" tabindex="-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="strength-row">
+            <div class="strength-track"><div class="strength-fill" id="strengthFill"></div></div>
+            <span class="strength-label" id="strengthLabel">—</span>
+          </div>
+          <span class="field-error" id="regPassErr"></span>
+        </div>
+        <button type="submit" class="btn-primary">Create Account</button>
+        <p class="auth-switch-hint">Have an account? <a href="#" onclick="switchTab('login')">Sign in</a></p>
+      </form>
+
+    </div><!-- /auth-form-col -->
+  </div><!-- /auth-shell -->
+</div><!-- /auth -->
+
+
+<!-- ══════════════════════════════════════════════
+     LAYER 3 · MAIN APPLICATION
+══════════════════════════════════════════════ -->
+<div id="app" class="layer">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-top">
+      <div class="sidebar-logo">
+        <div class="sl-bolt">
+          <svg viewBox="0 0 40 56" fill="none"><path d="M23 2L2 30H18L16 54L38 24H22L23 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>
+        </div>
+        <span>VoltShare</span>
+      </div>
+
+      <nav class="nav-links">
+        <a class="nav-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+          Dashboard
+        </a>
+        <a class="nav-link" data-page="market" onclick="navigateTo('market')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M3 3h18l-2 9H5L3 3z"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+          Marketplace
+        </a>
+        <a class="nav-link" data-page="transactions" onclick="navigateTo('transactions')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+          Transactions
+        </a>
+        <a class="nav-link" data-page="wallet" onclick="navigateTo('wallet')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5"/><circle cx="17" cy="12" r="2"/></svg>
+          Wallet
+        </a>
+      </nav>
+    </div>
+
+    <div class="sidebar-user">
+      <div class="su-avatar" id="suAvatar">AJ</div>
+      <div class="su-info">
+        <div class="su-name" id="suName">Alex Johnson</div>
+        <div class="su-role" id="suRole">Prosumer</div>
+      </div>
+      <button class="su-logout" onclick="logout()" title="Sign out">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN PANEL -->
+  <main class="main-panel">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title" id="topbarTitle">Dashboard</h1>
+        <span class="topbar-sub" id="topbarSub">Welcome back, <strong id="topbarName">Alex</strong></span>
+      </div>
+      <div class="topbar-right">
+        <div class="zone-chip">
+          <span class="zone-dot"></span>
+          Grid Zone UDC-01
+        </div>
+        <div class="notif-btn" id="notifBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="17" height="17"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-badge" id="notifBadge">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ─────────────────────────────── PAGE: DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+
+      <!-- KPI Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card" style="--accent:#00d68f">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Energy Bought</div>
+            <div class="kpi-value" id="kpiBought">0 kWh</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#00b4ff">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Energy Sold</div>
+            <div class="kpi-value" id="kpiSold">0 kWh</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#f5a623">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Wallet Balance</div>
+            <div class="kpi-value" id="kpiWallet">₹0</div>
+          </div>
+        </div>
+        <div class="kpi-card" style="--accent:#a78bfa">
+          <div class="kpi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L4.5 13.5H11L10 22L20.5 10.5H14L13 2Z"/></svg></div>
+          <div class="kpi-body">
+            <div class="kpi-label">Active Listings</div>
+            <div class="kpi-value" id="kpiListings">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buy / Sell Toggle -->
+      <div class="trade-section">
+        <div class="trade-header">
+          <h2 class="section-title">Trade Energy</h2>
+          <div class="bs-toggle">
+            <button class="bs-btn active" id="btnBuy" onclick="setTradeMode('buy')">Buy Energy</button>
+            <button class="bs-btn" id="btnSell" onclick="setTradeMode('sell')">Sell Energy</button>
+            <div class="bs-slider" id="bsSlider"></div>
+          </div>
+        </div>
+
+        <!-- BUY FORM -->
+        <div class="trade-form active" id="buyForm">
+          <div class="trade-form-inner">
+            <div class="tf-intro">
+              <h3>Request Energy</h3>
+              <p>Browse available listings below or submit a buy request at your max price.</p>
+            </div>
+            <div class="tf-fields">
+              <div class="field-group">
+                <label class="field-label">Required Units (kWh)</label>
+                <input type="number" id="buyUnits" class="field-input" placeholder="e.g. 10" min="0.1" step="0.1"/>
+                <span class="field-error" id="buyUnitsErr"></span>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Max Price per kWh (₹)</label>
+                <input type="number" id="buyMaxPrice" class="field-input" placeholder="e.g. 6.00" min="0.1" step="0.01"/>
+                <span class="field-error" id="buyMaxPriceErr"></span>
+              </div>
+            </div>
+            <button class="btn-primary" onclick="submitBuyRequest()">Submit Buy Request</button>
+          </div>
+        </div>
+
+        <!-- SELL FORM -->
+        <div class="trade-form" id="sellForm">
+          <div class="trade-form-inner">
+            <div class="tf-intro">
+              <h3>List Your Energy</h3>
+              <p>Set the units you want to sell and your asking price per kWh.</p>
+            </div>
+            <div class="tf-fields">
+              <div class="field-group">
+                <label class="field-label">Units Available (kWh)</label>
+                <input type="number" id="sellUnits" class="field-input" placeholder="e.g. 15" min="0.1" step="0.1"/>
+                <span class="field-error" id="sellUnitsErr"></span>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Price per kWh (₹)</label>
+                <input type="number" id="sellPrice" class="field-input" placeholder="e.g. 5.50" min="0.1" step="0.01"/>
+                <span class="field-error" id="sellPriceErr"></span>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Energy Source</label>
+                <select id="sellSource" class="field-input field-select">
+                  <option value="Solar">Solar</option>
+                  <option value="Wind">Wind</option>
+                  <option value="Biogas">Biogas</option>
+                  <option value="Hydro">Hydro</option>
+                </select>
+              </div>
+            </div>
+            <div class="sell-preview" id="sellPreview">
+              <div class="sp-row"><span>Gross Revenue</span><span id="spGross">—</span></div>
+              <div class="sp-row"><span>Platform Fee (2.5%)</span><span id="spFee">—</span></div>
+              <div class="sp-row strong"><span>You Receive</span><span id="spNet">—</span></div>
+            </div>
+            <button class="btn-primary" onclick="submitSellListing()">Publish Listing</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Listings -->
+      <div class="listings-section">
+        <div class="section-header-row">
+          <h2 class="section-title">Available Listings</h2>
+          <div class="filter-row">
+            <button class="filter-pill active" data-src="All" onclick="filterListings('All', this)">All</button>
+            <button class="filter-pill" data-src="Solar" onclick="filterListings('Solar', this)">Solar</button>
+            <button class="filter-pill" data-src="Wind" onclick="filterListings('Wind', this)">Wind</button>
+            <button class="filter-pill" data-src="Biogas" onclick="filterListings('Biogas', this)">Biogas</button>
+          </div>
+        </div>
+        <div class="listings-grid" id="listingsGrid">
+          <!-- JS-rendered cards -->
+        </div>
+      </div>
+
+    </section><!-- /page-dashboard -->
+
+
+    <!-- ─────────────────────────────── PAGE: MARKET -->
+    <section class="page" id="page-market">
+      <div class="page-inner">
+        <h2 class="section-title" style="margin-bottom:20px">Full Marketplace</h2>
+        <div class="listings-grid" id="marketGrid"></div>
+      </div>
+    </section>
+
+
+    <!-- ─────────────────────────────── PAGE: TRANSACTIONS -->
+    <section class="page" id="page-transactions">
+      <div class="page-inner">
+        <div class="section-header-row" style="margin-bottom:18px">
+          <h2 class="section-title">Transaction History</h2>
+          <button class="btn-outline" onclick="exportCSV()">Export CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="txTable">
+            <thead>
+              <tr>
+                <th>Ref #</th><th>Type</th><th>Counterparty</th>
+                <th>Units (kWh)</th><th>Amount (₹)</th><th>Source</th>
+                <th>Status</th><th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="txBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ─────────────────────────────── PAGE: WALLET -->
+    <section class="page" id="page-wallet">
+      <div class="wallet-layout">
+        <!-- Balance card -->
+        <div class="wallet-card">
+          <div class="wc-eyebrow">AVAILABLE BALANCE</div>
+          <div class="wc-amount" id="wcAmount">₹5,000.00</div>
+          <div class="wc-meta">Wallet ID: W-<span id="wcId">0001</span> · INR</div>
+          <div class="wc-actions">
+            <button class="btn-primary" onclick="openAddMoney()">Add Money</button>
+            <button class="btn-outline" onclick="showToast('Withdrawals coming soon', 'info')">Withdraw</button>
+          </div>
+        </div>
+
+        <!-- Mini stats -->
+        <div class="wallet-stats">
+          <div class="wstat"><span class="wstat-l">Total Spent</span><span class="wstat-v red" id="wstatSpent">₹0</span></div>
+          <div class="wstat"><span class="wstat-l">Total Earned</span><span class="wstat-v green" id="wstatEarned">₹0</span></div>
+          <div class="wstat"><span class="wstat-l">Transactions</span><span class="wstat-v" id="wstatCount">0</span></div>
+        </div>
+
+        <!-- Recharge history -->
+        <div class="recharge-section">
+          <h3 class="section-title" style="margin-bottom:14px">Recharge History</h3>
+          <div class="recharge-list" id="rechargeList"></div>
+        </div>
+      </div>
+    </section>
+
+  </main><!-- /main-panel -->
+</div><!-- /app -->
+
+
+<!-- ══════════════════════════════════════════════
+     MODALS
+══════════════════════════════════════════════ -->
+
+<!-- Buy Confirm Modal -->
+<div class="modal-backdrop" id="modalBuy">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">Confirm Purchase</span>
+      <button class="modal-close" onclick="closeModal('modalBuy')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modalBuyBody"></div>
+    <div class="modal-ftr">
+      <button class="btn-outline" onclick="closeModal('modalBuy')">Cancel</button>
+      <button class="btn-primary" id="modalBuyConfirm">Confirm Buy</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Money Modal -->
+<div class="modal-backdrop" id="modalAddMoney">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">Add Money to Wallet</span>
+      <button class="modal-close" onclick="closeModal('modalAddMoney')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field-group">
+        <label class="field-label">Amount (₹)</label>
+        <input type="number" id="addMoneyAmount" class="field-input" placeholder="e.g. 1000" min="50"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label">Method</label>
+        <div class="method-grid">
+          <label class="method-opt"><input type="radio" name="method" value="UPI" checked> UPI</label>
+          <label class="method-opt"><input type="radio" name="method" value="Card"> Card</label>
+          <label class="method-opt"><input type="radio" name="method" value="Net Banking"> Net Banking</label>
+        </div>
+      </div>
+      <div class="quick-amounts">
+        <span class="qa-label">Quick:</span>
+        <button type="button" class="qa-chip" onclick="setAddMoney(500)">₹500</button>
+        <button type="button" class="qa-chip" onclick="setAddMoney(1000)">₹1,000</button>
+        <button type="button" class="qa-chip" onclick="setAddMoney(2000)">₹2,000</button>
+        <button type="button" class="qa-chip" onclick="setAddMoney(5000)">₹5,000</button>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn-outline" onclick="closeModal('modalAddMoney')">Cancel</button>
+      <button class="btn-primary" onclick="processAddMoney()">Add Money</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
