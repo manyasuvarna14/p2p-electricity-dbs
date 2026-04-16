@@ -474,6 +474,30 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
-<script src="script.js"></script>
+<!-- ===================== FIXED JS ===================== -->
+<script src="./script.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM LOADED");
+
+  const btn = document.getElementById("enterBtn");
+
+  if (btn) {
+    btn.addEventListener("click", () => {
+      console.log("BUTTON CLICKED");
+
+      if (typeof showScreen === "function") {
+        showScreen("auth-screen");
+      } else {
+        document.getElementById("landing-screen").classList.remove("active");
+        document.getElementById("auth-screen").classList.add("active");
+      }
+    });
+  } else {
+    console.error("enterBtn not found");
+  }
+});
+</script>
 </body>
 </html>
