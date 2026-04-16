@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>VoltShare — P2P Energy Trading</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- =====================================================
+     SCREEN 1: LANDING / SPLASH
+===================================================== -->
+<div id="landing-screen" class="screen active">
+  <canvas id="energyCanvas"></canvas>
+
+  <div class="landing-center">
+    <div class="landing-logo-wrap">
+      <div class="bolt-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+    <h1 class="landing-title">
+      <span class="lt-volt">Volt</span><span class="lt-share">Share</span>
+    </h1>
+    <p class="landing-sub">Peer-to-Peer Electricity Trading Platform</p>
+    <div class="landing-tagline">Trade clean energy. Empower your grid.</div>
+    <button class="landing-cta" id="enterBtn">Get Started</button>
+  </div>
+
+  <div class="landing-scroll-hint">scroll or click to continue</div>
+</div>
+
+<!-- =====================================================
+     SCREEN 2: AUTH (Login / Signup)
+===================================================== -->
+<div id="auth-screen" class="screen">
+  <div class="auth-bg">
+    <div class="auth-grid"></div>
+  </div>
+
+  <div class="auth-container">
+    <!-- Left panel -->
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="auth-bolt">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+        </div>
+        <span class="auth-brand-name">VoltShare</span>
+      </div>
+      <h2 class="auth-headline">Energy trading,<br>reimagined.</h2>
+      <p class="auth-desc">Connect with local producers and consumers. Buy and sell clean energy directly — no middlemen, fair prices.</p>
+      <div class="auth-features">
+        <div class="auth-feat"><span class="feat-dot"></span>Real-time pricing</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Smart meter integration</div>
+        <div class="auth-feat"><span class="feat-dot"></span>Secure P2P transactions</div>
+      </div>
+    </div>
+
+    <!-- Right panel: form -->
+    <div class="auth-right">
+      <div class="auth-card">
+        <!-- Toggle -->
+        <div class="auth-toggle">
+          <button class="at-btn active" id="loginTabBtn" onclick="showAuthTab('login')">Sign In</button>
+          <button class="at-btn" id="signupTabBtn" onclick="showAuthTab('signup')">Sign Up</button>
+          <div class="at-slider" id="atSlider"></div>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form class="auth-form active" id="loginForm" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="loginEmail" placeholder="you@example.com" required/>
+            <span class="form-err" id="loginEmailErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <input type="password" class="form-input" id="loginPassword" placeholder="Enter password" required/>
+              <button type="button" class="eye-btn" onclick="togglePass('loginPassword', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <span class="form-err" id="loginPassErr"></span>
+          </div>
+          <button type="submit" class="auth-submit-btn">Sign In</button>
+          <p class="auth-switch">Don't have an account? <a href="#" onclick="showAuthTab('signup')">Sign up</a></p>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form class="auth-form" id="signupForm" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" class="form-input" id="signupName" placeholder="Alex Johnson" required/>
+            <span class="form-err" id="signupNameErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address</label>
+            <input type="email" class="form-input" id="signupEmail" placeholder="you@example.com" required/>
+            <span class="form-err" id="signupEmailErr"></span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Role</label>
+            <select class="form-input form-select" id="signupRole">
+              <option value="buyer">Buyer — I want to purchase energy</option>
+              <option value="seller">Seller — I have surplus energy</option>
+              <option value="prosumer">Prosumer — Both buy and sell</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <div class="input-wrap">
+              <input type="password" class="form-input" id="signupPassword" placeholder="Min 8 characters" required/>
+              <button type="button" class="eye-btn" onclick="togglePass('signupPassword', this)">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+            <div class="pass-strength" id="passStrength">
+              <div class="ps-bar"><div class="ps-fill" id="psFill"></div></div>
+              <span class="ps-label" id="psLabel">Enter password</span>
+            </div>
+            <span class="form-err" id="signupPassErr"></span>
+          </div>
+          <button type="submit" class="auth-submit-btn">Create Account</button>
+          <p class="auth-switch">Already have an account? <a href="#" onclick="showAuthTab('login')">Sign in</a></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- =====================================================
+     SCREEN 3: MAIN APP DASHBOARD
+===================================================== -->
+<div id="app-screen" class="screen">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sb-bolt">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      </div>
+      <span class="sb-name">VoltShare</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="dashboard">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <a href="#" class="nav-item" data-page="transactions">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+        Transactions
+      </a>
+      <a href="#" class="nav-item" data-page="wallet">
+        <svg class="nav-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-2"/><path d="M16 12a2 2 0 000 4h5v-4h-5z"/></svg>
+        Wallet
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-pill">
+        <div class="user-av" id="sidebarAv">AJ</div>
+        <div class="user-details">
+          <div class="user-nm" id="sidebarName">Alex Johnson</div>
+          <div class="user-rl" id="sidebarRole">Prosumer</div>
+        </div>
+      </div>
+      <button class="logout-btn" onclick="logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main-content">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <span class="page-title" id="pageTitle">Dashboard</span>
+        <span class="page-sub" id="pageSub">Welcome back, <span id="topbarName">Alex</span></span>
+      </div>
+      <div class="topbar-right">
+        <div class="zone-pill">
+          <span class="zone-led"></span>
+          Grid Zone: UDC-01
+        </div>
+        <div class="notif-wrap" id="notifBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="18" height="18"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot"></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ── PAGE: DASHBOARD ── -->
+    <section class="page active" id="page-dashboard">
+
+      <!-- Summary Cards -->
+      <div class="summary-row">
+        <div class="sum-card" style="--c:#00e5a0">
+          <div class="sum-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg>
+          </div>
+          <div class="sum-body">
+            <div class="sum-label">Energy Bought</div>
+            <div class="sum-val" id="statBought">46.25 kWh</div>
+            <div class="sum-change up">+2.5 kWh this week</div>
+          </div>
+        </div>
+        <div class="sum-card" style="--c:#00b4ff">
+          <div class="sum-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+          <div class="sum-body">
+            <div class="sum-label">Energy Sold</div>
+            <div class="sum-val" id="statSold">10.50 kWh</div>
+            <div class="sum-change up">+10.5 kWh today</div>
+          </div>
+        </div>
+        <div class="sum-card" style="--c:#ffb800">
+          <div class="sum-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-2"/><path d="M16 12a2 2 0 000 4h5v-4h-5z"/></svg>
+          </div>
+          <div class="sum-body">
+            <div class="sum-label">Wallet Balance</div>
+            <div class="sum-val" id="statWallet">₹4,200</div>
+            <div class="sum-change">Available</div>
+          </div>
+        </div>
+        <div class="sum-card" style="--c:#c084fc">
+          <div class="sum-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2L4.5 13.5H11L10 22L20.5 10H14L13 2Z"/></svg>
+          </div>
+          <div class="sum-body">
+            <div class="sum-label">Active Listings</div>
+            <div class="sum-val" id="statListings">5</div>
+            <div class="sum-change up">+2 today</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buy / Sell Toggle -->
+      <div class="mode-bar">
+        <div class="mode-toggle">
+          <button class="mode-btn active" id="buyModeBtn" onclick="setMode('buy')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><path d="M12 2v20M2 12h20"/></svg>
+            Buy Energy
+          </button>
+          <button class="mode-btn" id="sellModeBtn" onclick="setMode('sell')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="15" height="15"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            Sell Energy
+          </button>
+        </div>
+
+        <!-- Filters (only in buy mode) -->
+        <div class="filter-area" id="filterArea">
+          <button class="filter-chip active" data-filter="all">All Sources</button>
+          <button class="filter-chip" data-filter="solar">Solar</button>
+          <button class="filter-chip" data-filter="wind">Wind</button>
+          <button class="filter-chip" data-filter="biogas">Biogas</button>
+          <select class="filter-select" id="slotFilter">
+            <option value="all">All Slots</option>
+            <option value="Morning Peak">Morning Peak</option>
+            <option value="Day Standard">Day Standard</option>
+            <option value="Evening Peak">Evening Peak</option>
+            <option value="Night Off-Peak">Night Off-Peak</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- BUY MODE: Listings -->
+      <div id="buyMode">
+        <div class="listings-grid" id="listingsGrid"></div>
+      </div>
+
+      <!-- SELL MODE: Create Listing Form -->
+      <div id="sellMode" style="display:none">
+        <div class="sell-form-wrap">
+          <div class="sell-form-card">
+            <div class="sf-header">
+              <h3 class="sf-title">Create New Listing</h3>
+              <p class="sf-desc">Set your available energy, price, and time slot to list it on the marketplace.</p>
+            </div>
+            <form id="sellForm" onsubmit="handleSellSubmit(event)">
+              <div class="sf-grid">
+                <div class="form-group">
+                  <label class="form-label">Available Units (kWh)</label>
+                  <input type="number" class="form-input" id="sellUnits" placeholder="e.g. 10.5" min="0.1" step="0.1" required/>
+                  <span class="form-err" id="sellUnitsErr"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Price per kWh (₹)</label>
+                  <input type="number" class="form-input" id="sellPrice" placeholder="e.g. 5.50" min="1" step="0.01" required/>
+                  <span class="form-err" id="sellPriceErr"></span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Energy Source</label>
+                  <select class="form-input form-select" id="sellSource">
+                    <option value="solar">Solar</option>
+                    <option value="wind">Wind</option>
+                    <option value="biogas">Biogas</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Time Slot</label>
+                  <select class="form-input form-select" id="sellSlot">
+                    <option value="Morning Peak">Morning Peak (06:00 – 10:00)</option>
+                    <option value="Day Standard">Day Standard (10:00 – 18:00)</option>
+                    <option value="Evening Peak">Evening Peak (18:00 – 22:00)</option>
+                    <option value="Night Off-Peak">Night Off-Peak (22:00 – 06:00)</option>
+                  </select>
+                </div>
+                <div class="form-group sf-full">
+                  <label class="form-label">Listing Duration</label>
+                  <div class="duration-options">
+                    <label class="dur-opt"><input type="radio" name="duration" value="6" checked> 6 hours</label>
+                    <label class="dur-opt"><input type="radio" name="duration" value="12"> 12 hours</label>
+                    <label class="dur-opt"><input type="radio" name="duration" value="24"> 24 hours</label>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sell-preview" id="sellPreview" style="display:none">
+                <div class="sp-row"><span>Estimated Revenue</span><span class="sp-val green" id="spRevenue">—</span></div>
+                <div class="sp-row"><span>Platform Fee (2.5%)</span><span class="sp-val" id="spFee">—</span></div>
+                <div class="sp-row"><span>Net Earnings</span><span class="sp-val green" id="spNet">—</span></div>
+              </div>
+
+              <button type="submit" class="auth-submit-btn">Publish Listing</button>
+            </form>
+          </div>
+
+          <!-- My Listings -->
+          <div class="my-listings-card">
+            <div class="sf-header">
+              <h3 class="sf-title">My Active Listings</h3>
+            </div>
+            <div id="myListingsList"></div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── PAGE: TRANSACTIONS ── -->
+    <section class="page" id="page-transactions">
+      <div class="tx-summary-row">
+        <div class="tx-sum-card green">
+          <div class="txs-label">Total Purchased</div>
+          <div class="txs-val">₹2,840</div>
+        </div>
+        <div class="tx-sum-card blue">
+          <div class="txs-label">Total Sold</div>
+          <div class="txs-val">₹1,560</div>
+        </div>
+        <div class="tx-sum-card orange">
+          <div class="txs-label">Trades This Month</div>
+          <div class="txs-val">14</div>
+        </div>
+      </div>
+
+      <div class="section-hdr">
+        <h2 class="section-title">Transaction History</h2>
+        <button class="action-btn" onclick="exportCSV()">Export CSV</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="tx-table" id="txTable">
+          <thead>
+            <tr>
+              <th>Tx ID</th><th>Buyer</th><th>Seller</th>
+              <th>Units (kWh)</th><th>Amount (₹)</th><th>Fee</th>
+              <th>Status</th><th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── PAGE: WALLET ── -->
+    <section class="page" id="page-wallet">
+      <div class="wallet-layout">
+        <div class="wallet-col">
+          <div class="wallet-card">
+            <div class="wc-label">WALLET BALANCE</div>
+            <div class="wc-balance" id="walletBalanceDisplay">₹4,200.00</div>
+            <div class="wc-meta">INR · Wallet #W-1001</div>
+            <div class="wc-actions">
+              <button class="wc-btn primary" onclick="openModal('rechargeModal')">Add Money</button>
+              <button class="wc-btn outline" onclick="showToast('Withdraw coming soon', 'info')">Withdraw</button>
+            </div>
+          </div>
+          <div class="wallet-mini-stats">
+            <div class="wms"><span class="wms-l">Total Spent</span><span class="wms-v red">- ₹2,840</span></div>
+            <div class="wms"><span class="wms-l">Total Earned</span><span class="wms-v green">+ ₹1,560</span></div>
+            <div class="wms"><span class="wms-l">Refunds</span><span class="wms-v">+ ₹120</span></div>
+          </div>
+        </div>
+        <div class="wallet-col">
+          <div class="section-hdr" style="margin-bottom:14px">
+            <h2 class="section-title">Recharge History</h2>
+          </div>
+          <div class="recharge-list" id="rechargeList"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- =====================================================
+     MODALS
+===================================================== -->
+
+<!-- Buy Modal -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">Confirm Purchase</span>
+      <button class="modal-x" onclick="closeModal('buyModal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="buyModalBody"></div>
+    <div class="modal-ftr">
+      <button class="modal-btn cancel" onclick="closeModal('buyModal')">Cancel</button>
+      <button class="modal-btn confirm" id="confirmBuyBtn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Recharge Modal -->
+<div class="modal-overlay" id="rechargeModal">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">Add Money to Wallet</span>
+      <button class="modal-x" onclick="closeModal('rechargeModal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Amount (₹)</label>
+        <input type="number" class="form-input" id="rechargeAmount" placeholder="e.g. 500" min="50"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Method</label>
+        <div class="method-opts">
+          <label class="mo"><input type="radio" name="pmethod" value="UPI" checked> UPI</label>
+          <label class="mo"><input type="radio" name="pmethod" value="Card"> Card</label>
+          <label class="mo"><input type="radio" name="pmethod" value="Net Banking"> Net Banking</label>
+        </div>
+      </div>
+      <div class="quick-row">
+        <span class="qr-l">Quick:</span>
+        <button type="button" class="qa" onclick="setAmt(200)">₹200</button>
+        <button type="button" class="qa" onclick="setAmt(500)">₹500</button>
+        <button type="button" class="qa" onclick="setAmt(1000)">₹1,000</button>
+        <button type="button" class="qa" onclick="setAmt(2000)">₹2,000</button>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="modal-btn cancel" onclick="closeModal('rechargeModal')">Cancel</button>
+      <button class="modal-btn confirm" onclick="processRecharge()">Add Money</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
