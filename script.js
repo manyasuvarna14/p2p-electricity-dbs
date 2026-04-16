@@ -7,7 +7,8 @@
 /* ════════════════════════════════════════════════════
    1. LANDING PAGE — Energy Canvas Animation
 ════════════════════════════════════════════════════ */
-const API = "http://localhost:3000";
+// Change this to your backend URL if deploying
+const API = window.VOLTSHARE_API_URL || "http://localhost:5000";
 function initEnergyCanvas() {
   const canvas = document.getElementById('energyCanvas');
   if (!canvas) return;
