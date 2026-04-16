@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-VoltShare — FULL script.js (Backend Integrated)
+VoltShare — FINAL script.js (FULLY CONNECTED)
 ═══════════════════════════════════════════════════════════ */
 
 /* ===================== BACKEND CONFIG ===================== */
@@ -16,14 +16,16 @@ body: body ? JSON.stringify(body) : null,
 
 ```
 const data = await res.json();
-if (!res.ok) throw new Error(data.message || "API error");
+if (!res.ok || !data.success) {
+  throw new Error(data.message || "API error");
+}
 
 return data.data;
 ```
 
 } catch (err) {
-console.error("API Error:", err);
-showToast("Server error", "error");
+console.error("API ERROR:", err);
+showToast(err.message || "Server error", "error");
 return null;
 }
 }
@@ -32,11 +34,9 @@ return null;
 let energyListings = [];
 let selectedListing = null;
 let walletBalance = 0;
+let currentUserId = null;
 
-const currentUser = {
-name: "",
-role: ""
-};
+const currentUser = { name: "", role: "" };
 
 /* ===================== LOGIN ===================== */
 async function handleLogin(e) {
@@ -51,8 +51,13 @@ password: pass
 });
 
 if (user) {
+currentUserId = user.user_id;
 walletBalance = user.wallet_balance || 0;
+
+```
 enterApp(user.full_name, user.role_name);
+```
+
 }
 }
 
@@ -65,12 +70,7 @@ const email = document.getElementById("signupEmail").value.trim();
 const pass  = document.getElementById("signupPassword").value;
 const role  = document.getElementById("signupRole").value;
 
-const roleMap = {
-buyer: 1,
-seller: 2,
-prosumer: 3,
-admin: 4
-};
+const roleMap = { buyer:1, seller:2, prosumer:3, admin:4 };
 
 const res = await apiRequest("/api/users/register", "POST", {
 full_name: name,
@@ -80,8 +80,7 @@ role_id: roleMap[role] || 3
 });
 
 if (res) {
-walletBalance = 0;
-enterApp(name, role);
+showToast("Signup successful. Please login.", "success");
 }
 }
 
@@ -133,10 +132,12 @@ card.className = "listing-card";
 
 ```
 card.innerHTML = `
-  <h3>${listing.source_name || "Energy"}</h3>
+  <h3>${listing.source_type || "Energy"}</h3>
   <p><strong>Units:</strong> ${listing.units_available_kwh} kWh</p>
   <p><strong>Price:</strong> ₹${listing.price_per_kwh}</p>
-  <p><strong>Seller:</strong> ${listing.seller_id || "User"}</p>
+  <p><strong>Seller:</strong> ${listing.seller_name}</p>
+  <p><strong>Zone:</strong> ${listing.zone_name}</p>
+  <p><strong>Slot:</strong> ${listing.slot_name}</p>
   <button onclick="selectListing(${listing.listing_id})">
     ${listing.units_available_kwh > 0 ? "Buy" : "Sold"}
   </button>
@@ -154,26 +155,54 @@ selectedListing = energyListings.find(l => l.listing_id === id);
 showToast("Listing selected", "success");
 }
 
-/* ===================== BUY (SIMULATED) ===================== */
-function confirmPurchase() {
+/* ===================== BUY (REAL BACKEND) ===================== */
+async function confirmPurchase() {
 if (!selectedListing) return;
 
-const total = selectedListing.units_available_kwh * selectedListing.price_per_kwh;
+const units = selectedListing.units_available_kwh;
 
-walletBalance -= total;
-selectedListing.units_available_kwh = 0;
-selectedListing.status = "sold";
+const res = await apiRequest("/api/orders", "POST", {
+buyer_id: currentUserId,
+listing_id: selectedListing.listing_id,
+units_requested_kwh: units
+});
 
-showToast("Purchase simulated (backend missing)", "info");
+if (res) {
+showToast("Purchase successful!", "success");
 
+```
+walletBalance -= res.amount_charged;
 updateWalletUI();
-renderListings();
+
+loadListings();
+```
+
+}
 }
 
 /* ===================== SELL ===================== */
-function handleSellSubmit(e) {
+async function handleSellSubmit(e) {
 e.preventDefault();
-showToast("Sell feature not implemented yet", "error");
+
+const units  = parseFloat(document.getElementById("sellUnits").value);
+const price  = parseFloat(document.getElementById("sellPrice").value);
+
+const today = new Date().toISOString().split("T")[0];
+
+const res = await apiRequest("/api/listings", "POST", {
+seller_id: currentUserId,
+zone_id: 1,
+slot_id: 1,
+energy_source_id: 1,
+units_available_kwh: units,
+price_per_kwh: price,
+listing_date: today
+});
+
+if (res) {
+showToast("Listing created!", "success");
+loadListings();
+}
 }
 
 /* ===================== WALLET ===================== */
