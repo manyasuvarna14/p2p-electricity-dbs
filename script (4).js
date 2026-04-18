@@ -500,8 +500,7 @@ function handleRegister(e) {
     name,
     email,
     role,
-    password,          // NOTE: In a real app, you'd hash this
-    password:  pass,   // overwrite (fix hoisting collision)
+    password:  pass,   // In a real app, you would hash this
     balance:   STARTING_BALANCE,
     createdAt: new Date().toISOString(),
   };
@@ -556,7 +555,7 @@ function capitalize(str) {
 ───────────────────────────────────────────────────────────────────*/
 
 const pageTitles = {
-  dashboard:    { title: 'Dashboard',       sub: 'Your energy overview' },
+  dashboard:    { title: 'Dashboard' },
   market:       { title: 'Marketplace',     sub: 'Browse all available listings' },
   transactions: { title: 'Transactions',    sub: 'Your complete trade history' },
   wallet:       { title: 'Wallet',          sub: 'Balance, payments & history' },
@@ -572,11 +571,14 @@ function navigateTo(pageId) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + pageId).classList.add('active');
 
-  // Update topbar
+  // Update topbar title; only update subtitle for non-dashboard pages
+  // (dashboard keeps the personalised "Welcome back, Name" set on login)
   const info = pageTitles[pageId];
   if (info) {
     document.getElementById('topbarTitle').textContent = info.title;
-    document.getElementById('topbarSub').textContent   = info.sub;
+    if (info.sub) {
+      document.getElementById('topbarSub').textContent = info.sub;
+    }
   }
 
   // Render the page content
@@ -884,14 +886,6 @@ function updateSellPreview() {
   document.getElementById('spNet').textContent   = net   > 0 ? fmtRupee(net)   : '—';
 }
 
-// Attach live update to sell inputs
-document.addEventListener('DOMContentLoaded', () => {
-  ['sellUnits', 'sellPrice'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('input', updateSellPreview);
-  });
-});
-
 /** Submit a new energy listing */
 function submitSellListing() {
   clearErr('sellUnitsErr');
@@ -1170,4 +1164,12 @@ window.addEventListener('DOMContentLoaded', () => {
     const badge = document.getElementById('notifBadge');
     badge.textContent = notifCount;
   }
+});
+
+// Attach sell preview listeners after DOM is ready (deferred so elements exist)
+document.addEventListener('DOMContentLoaded', () => {
+  ['sellUnits', 'sellPrice'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', updateSellPreview);
+  });
 });
